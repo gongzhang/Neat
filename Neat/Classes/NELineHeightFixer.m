@@ -8,6 +8,7 @@
 
 #import "NELineHeightFixer.h"
 #import "NELineHeightFixerInner.h"
+#import <CoreText/CoreText.h>
 
 @implementation NELineHeightFixer
 
@@ -153,6 +154,8 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
 
 + (CGFloat)lineHeightForFont:(UIFont *)font paragraphStyle:(NSParagraphStyle *)style  {
     CGFloat lineHeight = font.lineHeight;
+    CTFontRef coreFont = (__bridge CTFontRef)font;
+    CGFloat lineHeight = CTFontGetAscent(coreFont) + ABS(CTFontGetDescent(coreFont)) + CTFontGetLeading(coreFont);
     if (!style) {
         return lineHeight;
     }
