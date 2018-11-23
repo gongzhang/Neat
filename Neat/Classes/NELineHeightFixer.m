@@ -179,7 +179,7 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
 
 /// get system default font of size
 - (UIFont *)systemDefaultFontForFont:(UIFont *)font {
-    return [UIFont systemFontOfSize:font.pointSize];
+    return [Font fontWithName:@"Helvetica" size:font.pointSize];
 }
 
 
