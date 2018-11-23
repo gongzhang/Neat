@@ -6,8 +6,13 @@
 //  Copyright © 2017 leave. All rights reserved.
 //
 
+#if TARGET_OS_OSX
+#import <Cocoa/Cocoa.h>
+#define Font NSFont
+#else
 #import <UIKit/UIKit.h>
-
+#define Font UIFont
+#endif
 
 /**
  Here solve the wrong line height problem of TextKit when have a mix 

@@ -22,7 +22,7 @@
 }
 
 + (CGFloat)fixedLineHeightForFontSize:(CGFloat)fontSize paragraphStyle:(NSParagraphStyle *)style {
-    return [self lineHeightForFont:[UIFont systemFontOfSize:fontSize] paragraphStyle:style];
+    return [self lineHeightForFont:[Font systemFontOfSize:fontSize] paragraphStyle:style];
 }
 
 - (BOOL)layoutManager    :(NSLayoutManager *)layoutManager
@@ -34,16 +34,16 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
 {
 
     // --- get info ---
-    UIFont *font;
+    Font *font;
     NSParagraphStyle *style;
     NSArray *attrsList = [self attributesListForGlyphRange:glyphRange layoutManager:layoutManager];
     [self getFont:&font paragraphStyle:&style fromAttibutesList:attrsList];
 
-    if (![font isKindOfClass:[UIFont class]]) {
+    if (![font isKindOfClass:[Font class]]) {
         return NO;
     }
 
-    UIFont *defaultFont = [self systemDefaultFontForFont:font];
+    Font *defaultFont = [self systemDefaultFontForFont:font];
 
 
     // --- calculate the rects ---
@@ -152,8 +152,7 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
 #pragma mark - private
 
 
-+ (CGFloat)lineHeightForFont:(UIFont *)font paragraphStyle:(NSParagraphStyle *)style  {
-    CGFloat lineHeight = font.lineHeight;
++ (CGFloat)lineHeightForFont:(Font *)font paragraphStyle:(NSParagraphStyle *)style  {
     CTFontRef coreFont = (__bridge CTFontRef)font;
     CGFloat lineHeight = CTFontGetAscent(coreFont) + ABS(CTFontGetDescent(coreFont)) + CTFontGetLeading(coreFont);
     if (!style) {
@@ -172,13 +171,13 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
 }
 
 
-+ (CGFloat)baseLineOffsetForLineHeight:(CGFloat)lineHeight font:(UIFont *)font {
++ (CGFloat)baseLineOffsetForLineHeight:(CGFloat)lineHeight font:(Font *)font {
     CGFloat baseLine = lineHeight + font.descender;
     return baseLine;
 }
 
 /// get system default font of size
-- (UIFont *)systemDefaultFontForFont:(UIFont *)font {
+- (Font *)systemDefaultFontForFont:(Font *)font {
     return [Font fontWithName:@"Helvetica" size:font.pointSize];
 }
 
@@ -217,13 +216,13 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
     return dicts;
 }
 
-- (void)getFont:(UIFont **)returnFont paragraphStyle:(NSParagraphStyle **)returnStyle fromAttibutesList:(NSArray<NSDictionary *> *)attributesList {
+- (void)getFont:(Font **)returnFont paragraphStyle:(NSParagraphStyle **)returnStyle fromAttibutesList:(NSArray<NSDictionary *> *)attributesList {
 
     if (attributesList.count == 0) {
         return;
     }
 
-    UIFont *findedFont = nil;
+    Font *findedFont = nil;
     NSParagraphStyle *findedStyle = nil;
     CGFloat lastHeight = -CGFLOAT_MAX;
 
@@ -232,9 +231,9 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
         NSDictionary *attrs = attributesList[i];
 
         NSParagraphStyle *style = attrs[NSParagraphStyleAttributeName];
-        UIFont *font = attrs[NSFontAttributeName];
+        Font *font = attrs[NSFontAttributeName];
 
-        if ([font isKindOfClass:[UIFont class]] &&
+        if ([font isKindOfClass:[Font class]] &&
             (!style || [style isKindOfClass:[NSParagraphStyle class]]) ) {
 
             CGFloat height = [self.class lineHeightForFont:font paragraphStyle:style];

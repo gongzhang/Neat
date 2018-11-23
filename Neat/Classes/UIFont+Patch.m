@@ -10,13 +10,13 @@
 #import <objc/runtime.h>
 
 
-@implementation UIFont(Patch)
+@implementation Font(Patch)
 
-- (UIFont *)systemDefaultOfSameSize {
+- (Font *)systemDefaultOfSameSize {
     const void *key = @selector(systemDefaultOfSameSize);
-    UIFont *saved = objc_getAssociatedObject(self, key);
+    Font *saved = objc_getAssociatedObject(self, key);
     if (!saved) {
-        saved = [UIFont systemFontOfSize:self.pointSize];
+        saved = [Font systemFontOfSize:self.pointSize];
         objc_setAssociatedObject(self, key, saved, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     return saved;
@@ -45,7 +45,9 @@ static dispatch_once_t onceToken;
 
 + (void)patchMetrics {
     dispatch_once(&onceToken, ^{
+#if TARGET_OS_IPHONE
         [self exchangeMethod:@selector(lineHeight) another:@selector(neat_lineHeight)];
+#endif
         [self exchangeMethod:@selector(descender) another:@selector(neat_descender)];
         [self exchangeMethod:@selector(leading) another:@selector(neat_leading)];
         [self exchangeMethod:@selector(ascender) another:@selector(neat_ascender)];
@@ -55,7 +57,7 @@ static dispatch_once_t onceToken;
 }
 
 + (void)exchangeMethod:(SEL)selector another:(SEL)another {
-    Class c = [UIFont class];
+    Class c = [Font class];
     Method originalMethod = class_getInstanceMethod(c, selector);
     Method swizzledMethod = class_getInstanceMethod(c, another);
     method_exchangeImplementations(originalMethod, swizzledMethod);

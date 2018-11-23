@@ -6,7 +6,13 @@
 //
 //
 
+#if TARGET_OS_OSX
+#import <Cocoa/Cocoa.h>
+#define Font NSFont
+#else
 #import <UIKit/UIKit.h>
+#define Font UIFont
+#endif
 
 /// If you want to set your own delegate to NSLayoutManager,
 /// wrapper it with this class.
