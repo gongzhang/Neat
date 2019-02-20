@@ -51,10 +51,10 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
     CGRect usedRect = *lineFragmentUsedRect;
 
     // calculate the right line fragment height
-    CGFloat textLineHeight = [self.class lineHeightForFont:defaultFont paragraphStyle:style];
-    CGFloat fixedBaseLineOffset = [self.class baseLineOffsetForLineHeight:textLineHeight font:defaultFont];
-
-    rect.size.height = textLineHeight;
+    CGFloat attachmentsHeight = [self maximumHeightOfAttachmentsInAttributesList:attrsList textContainer:textContainer proposedLineFragment:rect layoutManager:layoutManager];
+    CGFloat textLineHeight = MAX([self.class lineHeightForFont:defaultFont paragraphStyle:style], attachmentsHeight);
+    CGFloat fixedBaseLineOffset = MAX([self.class baseLineOffsetForLineHeight:textLineHeight font:defaultFont], attachmentsHeight);
+    
     // Some font (like emoji) have large lineHeight than the one we calculated. If we set the usedRect
     // to a small line height, it will make the last line to disappear. So here we only adopt the calcuated
     // lineHeight when is larger than the original.
@@ -206,7 +206,8 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
         if (current <= last) {
             current += 1;
         }
-        NSDictionary *attributes = [textStorage attributesAtIndex:current effectiveRange:&effectRange];
+        NSMutableDictionary *attributes = [[textStorage attributesAtIndex:current effectiveRange:&effectRange]mutableCopy];
+        attributes[@"NEIndex"] = @(current);
         if (attributes) {
             [dicts addObject:attributes];
         }
@@ -247,6 +248,21 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
 
     *returnFont = findedFont;
     *returnStyle = findedStyle;
+}
+
+- (CGFloat)maximumHeightOfAttachmentsInAttributesList:(NSArray<NSDictionary *> *)attributesList textContainer:(NSTextContainer *)textContainer proposedLineFragment:(CGRect)proposedLineFragment layoutManager:(NSLayoutManager *)layoutManager {
+    CGFloat result = 0;
+    for (NSDictionary *attributes in attributesList) {
+        NSTextAttachment *attachment = attributes[NSAttachmentAttributeName];
+        if (attachment != nil) {
+            NSInteger current = [attributes[@"NSIndex"] integerValue];
+            CGRect attachmentFrame = [attachment.attachmentCell cellFrameForTextContainer:textContainer proposedLineFragment:proposedLineFragment glyphPosition:CGPointZero characterIndex: current];
+            if (attachmentFrame.size.height > result) {
+                result = attachmentFrame.size.height;
+            }
+        }
+    }
+    return result;
 }
 
 @end
