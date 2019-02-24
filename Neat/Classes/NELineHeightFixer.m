@@ -255,7 +255,7 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
     for (NSDictionary *attributes in attributesList) {
         NSTextAttachment *attachment = attributes[NSAttachmentAttributeName];
         if (attachment != nil) {
-            NSInteger current = [attributes[@"NSIndex"] integerValue];
+            NSInteger current = [attributes[@"NEIndex"] integerValue];
             CGRect attachmentFrame = [attachment.attachmentCell cellFrameForTextContainer:textContainer proposedLineFragment:proposedLineFragment glyphPosition:CGPointZero characterIndex: current];
             if (attachmentFrame.size.height > result) {
                 result = attachmentFrame.size.height;
