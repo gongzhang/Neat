@@ -256,7 +256,12 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
         NSTextAttachment *attachment = attributes[NSAttachmentAttributeName];
         if (attachment != nil) {
             NSInteger current = [attributes[@"NEIndex"] integerValue];
+#if TARGET_OS_OSX
             CGRect attachmentFrame = [attachment.attachmentCell cellFrameForTextContainer:textContainer proposedLineFragment:proposedLineFragment glyphPosition:CGPointZero characterIndex: current];
+#else
+            CGRect attachmentFrame;
+            [NSException raise:@"TextAttachmentsNotImplemented" format:@"Text attachment layout not implemented on iOS."];
+#endif
             if (attachmentFrame.size.height > result) {
                 result = attachmentFrame.size.height;
             }
