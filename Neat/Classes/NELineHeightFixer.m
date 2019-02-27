@@ -10,7 +10,25 @@
 #import "NELineHeightFixerInner.h"
 #import <CoreText/CoreText.h>
 
-@implementation NELineHeightFixer
+#if TARGET_OS_OSX
+#define SystemImage NSImage
+#else
+#define SystemImage UIImage
+#endif
+
+@implementation NELineHeightFixer {
+    NSLock *_attachmentLock;
+    NSMapTable *_attachmentTable;
+}
+
+- (id)init {
+    self = [super init];
+    if (self) {
+        _attachmentLock = [[NSLock alloc]init];
+        _attachmentTable = [NSMapTable weakToStrongObjectsMapTable];
+    }
+    return self;
+}
 
 + (instancetype)sharedInstance {
     static id instance;
@@ -51,7 +69,7 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
     CGRect usedRect = *lineFragmentUsedRect;
 
     // calculate the right line fragment height
-    CGFloat attachmentsHeight = [self maximumHeightOfAttachmentsInAttributesList:attrsList textContainer:textContainer proposedLineFragment:rect layoutManager:layoutManager];
+    CGFloat attachmentsHeight = [self maximumHeightOfAttachmentsInGlyphRange:glyphRange layoutManager:layoutManager];
     CGFloat textOnlyLineHeight = [self.class lineHeightForFont:defaultFont paragraphStyle:style];
     CGFloat textLineHeight = MAX(textOnlyLineHeight, attachmentsHeight);
     CGFloat fixedBaseLineOffset = [self.class baseLineOffsetForLineHeight:textLineHeight font:defaultFont];
@@ -209,7 +227,6 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
             current += 1;
         }
         NSMutableDictionary *attributes = [[textStorage attributesAtIndex:current effectiveRange:&effectRange]mutableCopy];
-        attributes[@"NEIndex"] = @(current);
         if (attributes) {
             [dicts addObject:attributes];
         }
@@ -252,23 +269,32 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
     *returnStyle = findedStyle;
 }
 
-- (CGFloat)maximumHeightOfAttachmentsInAttributesList:(NSArray<NSDictionary *> *)attributesList textContainer:(NSTextContainer *)textContainer proposedLineFragment:(CGRect)proposedLineFragment layoutManager:(NSLayoutManager *)layoutManager {
-    CGFloat result = 0;
-    for (NSDictionary *attributes in attributesList) {
-        NSTextAttachment *attachment = attributes[NSAttachmentAttributeName];
-        if (attachment != nil) {
-            NSInteger current = [attributes[@"NEIndex"] integerValue];
+- (CGFloat)maximumHeightOfAttachmentsInGlyphRange:(NSRange)glyphRange layoutManager:(NSLayoutManager *)layoutManager {
+    __block CGFloat result = 0;
+    NSRange characterRange = [layoutManager characterRangeForGlyphRange:glyphRange actualGlyphRange:nil];
+    [layoutManager.textStorage enumerateAttribute:NSAttachmentAttributeName inRange:characterRange options:0 usingBlock:^(id  _Nullable value, NSRange range, BOOL * _Nonnull stop) {
+        NSTextAttachment *attachment = value;
+        [self->_attachmentLock lock];
+        if ([self->_attachmentTable objectForKey:attachment] == nil) {
+            CGSize imageSize = [[SystemImage alloc]initWithData:[attachment.fileWrapper regularFileContents]].size;
 #if TARGET_OS_OSX
-            CGRect attachmentFrame = [attachment.attachmentCell cellFrameForTextContainer:textContainer proposedLineFragment:proposedLineFragment glyphPosition:CGPointZero characterIndex: current];
+            NSValue *wrappedSize = [NSValue valueWithSize:imageSize];
 #else
-            CGRect attachmentFrame;
-            [NSException raise:@"TextAttachmentsNotImplemented" format:@"Text attachment layout not implemented on iOS."];
+            NSValue *wrappedSize = [NSValue valueWithCGSize:imageSize];
 #endif
-            if (attachmentFrame.size.height > result) {
-                result = attachmentFrame.size.height;
-            }
+            [self->_attachmentTable setObject:wrappedSize forKey:attachment];
         }
-    }
+        NSValue *storedSize = [self->_attachmentTable objectForKey:attachment];
+#if TARGET_OS_OSX
+        CGSize attachmentSize = [storedSize sizeValue];
+#else
+        CGSize attachmentSize = [storedSize CGSizeValue];
+#endif
+        [self->_attachmentLock unlock];
+        if (attachmentSize.height > result) {
+            result = attachmentSize.height;
+        }
+    }];
     return result;
 }
 
