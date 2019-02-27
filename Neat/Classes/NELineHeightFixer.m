@@ -52,9 +52,11 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
 
     // calculate the right line fragment height
     CGFloat attachmentsHeight = [self maximumHeightOfAttachmentsInAttributesList:attrsList textContainer:textContainer proposedLineFragment:rect layoutManager:layoutManager];
-    CGFloat textLineHeight = MAX([self.class lineHeightForFont:defaultFont paragraphStyle:style], attachmentsHeight);
-    CGFloat fixedBaseLineOffset = MAX([self.class baseLineOffsetForLineHeight:textLineHeight font:defaultFont], attachmentsHeight);
-    
+    CGFloat textOnlyLineHeight = [self.class lineHeightForFont:defaultFont paragraphStyle:style];
+    CGFloat textLineHeight = MAX(textOnlyLineHeight, attachmentsHeight);
+    CGFloat fixedBaseLineOffset = [self.class baseLineOffsetForLineHeight:textLineHeight font:defaultFont];
+
+    rect.size.height = textLineHeight;
     // Some font (like emoji) have large lineHeight than the one we calculated. If we set the usedRect
     // to a small line height, it will make the last line to disappear. So here we only adopt the calcuated
     // lineHeight when is larger than the original.
