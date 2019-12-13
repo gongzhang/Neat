@@ -17,14 +17,14 @@
 #endif
 
 @implementation NELineHeightFixer {
-    NSLock *_attachmentLock;
+    NSRecursiveLock *_attachmentLock;
     NSMapTable *_attachmentTable;
 }
 
 - (id)init {
     self = [super init];
     if (self) {
-        _attachmentLock = [[NSLock alloc]init];
+        _attachmentLock = [[NSRecursiveLock alloc]init];
         _attachmentTable = [NSMapTable weakToStrongObjectsMapTable];
     }
     return self;
