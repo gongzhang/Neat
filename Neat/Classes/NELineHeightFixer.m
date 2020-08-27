@@ -154,6 +154,8 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
         }
     }
 
+    rect.size.height = ceil(rect.size.height);
+    
     *lineFragmentRect = rect;
     *lineFragmentUsedRect = usedRect;
     *baselineOffset = fixedBaseLineOffset;
