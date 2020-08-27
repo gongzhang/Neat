@@ -6,6 +6,8 @@
 //  Copyright © 2017 leave. All rights reserved.
 //
 
+#import "TargetConditionals.h"
+
 #if TARGET_OS_OSX
 #import <Cocoa/Cocoa.h>
 #define Font NSFont
