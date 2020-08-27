@@ -198,7 +198,7 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
 
 /// get system default font of size
 - (Font *)systemDefaultFontForFont:(Font *)font {
-    return [Font fontWithName:@"Helvetica" size:font.pointSize];
+    return [Font systemFontOfSize:font.pointSize];
 }
 
 
