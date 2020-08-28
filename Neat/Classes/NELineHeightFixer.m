@@ -154,7 +154,12 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
         }
     }
 
+    // fix ghost selection area issue
     rect.size.height = ceil(rect.size.height);
+    
+    // vertical alignment in line
+    const CGFloat lineMultiply = style.lineHeightMultiple > 0 ? style.lineHeightMultiple : 1.0;
+    fixedBaseLineOffset = ceil(fixedBaseLineOffset - (rect.size.height - rect.size.height / lineMultiply) / 2);
     
     *lineFragmentRect = rect;
     *lineFragmentUsedRect = usedRect;
