@@ -156,6 +156,8 @@ shouldSetLineFragmentRect:(inout CGRect *)lineFragmentRect
 
     // fix ghost selection area issue
     rect.size.height = ceil(rect.size.height);
+    // fix background gap
+    usedRect.size.height = ceil(usedRect.size.height);
     
     // vertical alignment in line
     const CGFloat lineMultiply = style.lineHeightMultiple > 0 ? style.lineHeightMultiple : 1.0;
